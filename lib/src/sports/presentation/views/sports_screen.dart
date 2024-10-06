@@ -44,7 +44,9 @@ class _SportsScreenState extends State<SportsScreen> {
                 return SportsItemCard(
                   imageUrl: state.sports[index].image ?? '',
                   title: state.sports[index].name,
-                  onTap: () {},
+                  onTap: () {
+                    //TODO "Navigate to Skills screen and pass sports as data"
+                  },
                 );
               },
             );
