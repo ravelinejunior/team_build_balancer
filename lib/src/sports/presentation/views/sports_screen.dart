@@ -33,22 +33,27 @@ class _SportsScreenState extends State<SportsScreen> {
           if (state is SportsLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is SportsListLoaded) {
-            return GridView.builder(
-              shrinkWrap: true,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 1.8,
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: GridView.builder(
+                shrinkWrap: true,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 1.7,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: state.sports.length,
+                itemBuilder: (context, index) {
+                  return SportsItemCard(
+                    imageUrl: state.sports[index].image ?? '',
+                    title: state.sports[index].name,
+                    onTap: () {
+                      //TODO "Navigate to Skills screen and pass sports as data"
+                    },
+                  );
+                },
               ),
-              itemCount: state.sports.length,
-              itemBuilder: (context, index) {
-                return SportsItemCard(
-                  imageUrl: state.sports[index].image ?? '',
-                  title: state.sports[index].name,
-                  onTap: () {
-                    //TODO "Navigate to Skills screen and pass sports as data"
-                  },
-                );
-              },
             );
           } else if (state is SportsError) {
             return Center(child: Text(state.message));
