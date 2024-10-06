@@ -62,7 +62,7 @@ class SportsModel extends Equatable {
         ),
         const SportsModel(
           id: 1,
-          name: 'Soccer/Football',
+          name: 'Soccer',
           image: footballBackground,
         ),
         const SportsModel(

@@ -6,7 +6,6 @@ import 'package:team_build_balancer/core/route/router.dart';
 import 'package:team_build_balancer/src/sports/domain/use_cases/get_sport_by_id_use_case.dart';
 import 'package:team_build_balancer/src/sports/domain/use_cases/get_sports_use_case.dart';
 import 'package:team_build_balancer/src/sports/presentation/bloc/sports_bloc.dart';
-import 'package:team_build_balancer/src/sports/presentation/views/sports_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +32,6 @@ class MyApp extends StatelessWidget {
         theme: mainThemeData(),
         darkTheme: mainThemeData(),
         themeMode: ThemeMode.system,
-        initialRoute: SportsScreen.routeName,
         onGenerateRoute: generateRoute,
       ),
     );

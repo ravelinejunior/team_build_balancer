@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_build_balancer/core/utils/core_utils.dart';
 import 'package:team_build_balancer/src/sports/presentation/bloc/sports_bloc.dart';
+import 'package:team_build_balancer/src/sports/presentation/views/widgets/sports_item_card.dart';
 
 class SportsScreen extends StatefulWidget {
   const SportsScreen({Key? key}) : super(key: key);
@@ -24,6 +25,7 @@ class _SportsScreenState extends State<SportsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sports'),
+        centerTitle: true,
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: BlocConsumer<SportsBloc, SportsState>(
@@ -31,21 +33,18 @@ class _SportsScreenState extends State<SportsScreen> {
           if (state is SportsLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is SportsListLoaded) {
-            return ListView.builder(
+            return GridView.builder(
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.8,
+              ),
               itemCount: state.sports.length,
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ListTile(
-                    title: Text(state.sports[index].name),
-                    leading: SizedBox(
-                      height: 120,
-                      width: 120,
-                      child:  CircleAvatar(
-                        backgroundImage: NetworkImage(state.sports[index].image??''),
-                      )
-                    ),
-                  ),
+                return SportsItemCard(
+                  imageUrl: state.sports[index].image ?? '',
+                  title: state.sports[index].name,
+                  onTap: () {},
                 );
               },
             );
