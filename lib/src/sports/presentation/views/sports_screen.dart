@@ -36,12 +36,12 @@ class _SportsScreenState extends State<SportsScreen> {
             return const Center(child: CircularProgressIndicator());
           } else if (state is SportsListLoaded) {
             return Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(4.0),
               child: GridView.builder(
                 shrinkWrap: true,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 1.7,
+                  childAspectRatio: 1.5,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
                 ),
@@ -65,9 +65,7 @@ class _SportsScreenState extends State<SportsScreen> {
         },
         listener: (context, state) {
           if (state is SportsLoading) {
-            CoreUtils.showSnackBar(context, 'Loading');
           } else if (state is SportsListLoaded) {
-            CoreUtils.showSnackBar(context, 'Loaded');
           } else if (state is SportsError) {
             CoreUtils.showSnackBar(context, state.message);
           }

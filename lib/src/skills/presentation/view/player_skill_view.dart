@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:team_build_balancer/core/utils/core_utils.dart';
 import 'package:team_build_balancer/src/skills/domain/model/new_player.dart';
@@ -69,6 +70,13 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
       appBar: AppBar(
         title: const Text("Players and Skills"),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.upload_file),
+            tooltip: 'Import Players',
+            onPressed: () => _showImportDialog(context),
+          ),
+        ],
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Padding(
@@ -231,6 +239,51 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
     } else {
       // Show error message if validation fails
       CoreUtils.showSnackBar(context, 'Please fill in all fields correctly');
+    }
+  }
+
+  void _showImportDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Import Players from WhatsApp"),
+          content: const Text("Paste the names below (one per line):"),
+          actions: [
+            TextButton(
+              onPressed: () => _importFromClipboard(),
+              child: const Text("Paste from Clipboard"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future _importFromClipboard() async {
+    ClipboardData? clipboardData = await Clipboard.getData('text/plain');
+    if (clipboardData != null) {
+      String clipboardText = clipboardData.text ?? '';
+
+      // Extract names using regular expressions
+      RegExp regex = RegExp(r'\d+\-\s*([A-Za-zÀ-ÿ ]+)', multiLine: true);
+      Iterable<RegExpMatch> matches = regex.allMatches(clipboardText);
+
+      // Create a list of names from the matches
+      List<String> importedNames =
+          matches.map((match) => match.group(1)!.trim()).toList();
+
+      // Populate the player name controllers with extracted names
+      setState(() {
+        for (int i = 0;
+            i < importedNames.length && i < playerNameControllers.length;
+            i++) {
+          playerNameControllers[i].text = importedNames[i];
+        }
+      });
+
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pop(); // Close dialog
     }
   }
 }
