@@ -98,10 +98,7 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
                       // Validator to ensure the name is entered
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          playerNameControllers[index].text =
-                              "Player ${index + 1}";
-                          return null;
-                          // return 'Please enter player name';
+                          return 'Please enter player name';
                         }
                         return null;
                       },

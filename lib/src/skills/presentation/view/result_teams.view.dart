@@ -54,8 +54,9 @@ class _ResultTeamsViewState extends State<ResultTeamsView> {
                         child: Text(player.name[0]), // Player initial as avatar
                       ),
                       title: Text(player.name),
-                      subtitle:
-                          Text('Skills: ${player.skills.values.join(", ")}'),
+                      subtitle: Text(
+                            'Total Skill Value: ${player.totalSkillValue}',
+                          ),
                     );
                   },
                 ),
