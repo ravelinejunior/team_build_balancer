@@ -87,7 +87,7 @@ class TeamsDataSourceImpl implements TeamsDataSource {
   Future<void> updatePlayer(PlayerModel player) async {
     _players.map(
       (e) {
-        if(e.id == player.id){
+        if (e.id == player.id) {
           e = player;
         }
       },
@@ -98,7 +98,7 @@ class TeamsDataSourceImpl implements TeamsDataSource {
   Future<void> updateSkill(SkillModel skill) async {
     _skills.map(
       (e) {
-        if(e.id == skill.id){
+        if (e == skill) {
           e = skill;
         }
       },

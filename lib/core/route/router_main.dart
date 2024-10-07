@@ -10,11 +10,48 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         settings: settings,
       );
 
+    case SkillsScreen.routeName:
+      final sport = settings.arguments as SportsModel;
+      return _pageBuilder(
+        (_) => BlocProvider(
+          create: (context) => serviceLocator<TeamsBloc>(),
+          child: SkillsScreen(
+            sport: sport,
+          ),
+        ),
+        settings: settings,
+      );
+
+    case PlayersSkillsView.routeName:
+      final params = settings.arguments as SkillToPlayerAmountParams;
+      return _pageBuilder(
+        (_) => BlocProvider(
+          create: (context) => serviceLocator<TeamsBloc>(),
+          child: PlayersSkillsView(
+            params: params,
+          ),
+        ),
+        settings: settings,
+      );
+
+    case ResultTeamsView.routeName:
+      final params = settings.arguments as List<List<NewPlayer>>;
+      return _pageBuilder(
+        (_) => BlocProvider(
+          create: (context) => serviceLocator<TeamsBloc>(),
+          child: ResultTeamsView(
+            initialTeams: params,
+          ),
+        ),
+        settings: settings,
+      );
+
     default:
       return _pageBuilder(
         (_) => BlocProvider(
-            create: (context) => serviceLocator<SportsBloc>(),
-            child: const SportsScreen()),
+          create: (context) => serviceLocator<SportsBloc>(),
+          child: const SportsScreen(),
+        ),
         settings: settings,
       );
   }

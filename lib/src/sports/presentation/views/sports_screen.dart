@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_build_balancer/core/utils/core_utils.dart';
+import 'package:team_build_balancer/src/skills/presentation/skills_screen.dart';
+import 'package:team_build_balancer/src/sports/domain/model/sports.dart';
 import 'package:team_build_balancer/src/sports/presentation/bloc/sports_bloc.dart';
 import 'package:team_build_balancer/src/sports/presentation/views/widgets/sports_item_card.dart';
 
@@ -49,7 +51,8 @@ class _SportsScreenState extends State<SportsScreen> {
                     imageUrl: state.sports[index].image ?? '',
                     title: state.sports[index].name,
                     onTap: () {
-                      //TODO "Navigate to Skills screen and pass sports as data"
+                      final sport = state.sports[index];
+                      _handleSportSelection(context, sport);
                     },
                   );
                 },
@@ -70,6 +73,14 @@ class _SportsScreenState extends State<SportsScreen> {
           }
         },
       ),
+    );
+  }
+
+  void _handleSportSelection(BuildContext context, SportsModel sport) {
+    Navigator.pushNamed(
+      context,
+      SkillsScreen.routeName,
+      arguments: sport,
     );
   }
 }

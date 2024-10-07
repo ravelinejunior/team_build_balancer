@@ -1,15 +1,10 @@
-import 'package:get_it/get_it.dart';
-import 'package:team_build_balancer/src/sports/data/data_source/sports_data_source.dart';
-import 'package:team_build_balancer/src/sports/data/repository_impl/repository_impl.dart';
-import 'package:team_build_balancer/src/sports/domain/repository/sports_repository.dart';
-import 'package:team_build_balancer/src/sports/domain/use_cases/get_sport_by_id_use_case.dart';
-import 'package:team_build_balancer/src/sports/domain/use_cases/get_sports_use_case.dart';
-import 'package:team_build_balancer/src/sports/presentation/bloc/sports_bloc.dart';
+part of 'injection_container.dart';
 
 final serviceLocator = GetIt.instance;
 
 Future<void> init() async {
   await _initSports();
+  await initTeams();
 }
 
 Future<void> _initSports() async {
@@ -34,5 +29,81 @@ Future<void> _initSports() async {
     )
     ..registerFactory<SportsDataSource>(
       () => SportsDataSourceImpl(),
+    );
+}
+
+Future<void> initTeams() async {
+  serviceLocator
+    ..registerFactory(
+      () => TeamsBloc(
+        getPlayersUseCase: serviceLocator(),
+        getSkillsUseCase: serviceLocator(),
+        addPlayerUseCase: serviceLocator(),
+        addSkillUseCase: serviceLocator(),
+        addSkillToPlayerUseCase: serviceLocator(),
+        deletePlayerUseCase: serviceLocator(),
+        deleteSkillUseCase: serviceLocator(),
+        updatePlayerUseCase: serviceLocator(),
+        updateSkillUseCase: serviceLocator(),
+        generateTeamsUseCase: serviceLocator(),
+      ),
+    )
+    ..registerFactory<TeamRepository>(
+      () => TeamRepositoryImpl(
+        serviceLocator(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => GetPlayersUseCase(
+        serviceLocator(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => GetSkillsUseCase(
+        serviceLocator(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => GenerateTeamsUseCase(
+        serviceLocator(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => AddSkillToPlayerUseCase(
+        serviceLocator(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => AddPlayerUseCase(
+        serviceLocator(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => AddSkillUseCase(
+        serviceLocator(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => DeletePlayerUseCase(
+        serviceLocator(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => DeleteSkillUseCase(
+        serviceLocator(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => UpdatePlayerUseCase(
+        serviceLocator(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => UpdateSkillUseCase(
+        serviceLocator(),
+      ),
+    )
+    ..registerFactory<TeamsDataSource>(
+      () => TeamsDataSourceImpl(),
     );
 }
