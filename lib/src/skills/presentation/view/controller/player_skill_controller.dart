@@ -65,6 +65,43 @@ class PlayerSkillController extends ChangeNotifier {
     }
   }
 
+  bool verifyIfAllTextEditingAreFilled(
+    List<TextEditingController> playerNameControllers,
+    List<List<TextEditingController>> playerSkillsControllers,
+  ) {
+    for (int i = 0; i < playerNameControllers.length; i++) {
+      if (playerNameControllers[i].text.isEmpty) {
+        return false;
+      }
+      for (int j = 0; j < playerSkillsControllers[i].length; j++) {
+        if (playerSkillsControllers[i][j].text.isEmpty) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  void clearPlayerData(
+    List<TextEditingController> playerNameControllers,
+    List<List<TextEditingController>> playerSkillsControllers,
+  ) {
+    sharedPreferences.remove('playerData');
+    _clearTextEditingInputs(playerNameControllers, playerSkillsControllers);
+  }
+
+  void _clearTextEditingInputs(
+    List<TextEditingController> playerNameControllers,
+    List<List<TextEditingController>> playerSkillsControllers,
+  ) {
+    for (int i = 0; i < playerNameControllers.length; i++) {
+      playerNameControllers[i].clear();
+      for (int j = 0; j < playerSkillsControllers[i].length; j++) {
+        playerSkillsControllers[i][j].clear();
+      }
+    }
+  }
+
   // Generate teams based on player skill levels
   List<List<NewPlayer>> generateTeams({
     required List<NewPlayer> players,

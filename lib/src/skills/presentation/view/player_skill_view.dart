@@ -94,6 +94,11 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
             tooltip: 'Import Players',
             onPressed: () => _showImportDialog(context),
           ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            tooltip: 'Export Players',
+            onPressed: () => _showDeleteDialog(),
+          ),
         ],
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -185,6 +190,9 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
                                     });
                                   },
                                   validator: (value) {
+                                    if (value.toString().isEmpty) {
+                                      return 'Select ${skills[i]} score';
+                                    }
                                     if (value == null) {
                                       return 'Select ${skills[i]} score';
                                     }
@@ -207,8 +215,6 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
           ),
         ),
       ),
-      extendBody: true,
-      // Add padding for the FAB
       // Submit Button
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _onSubmit,
@@ -219,7 +225,9 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
   }
 
   void _onSubmit() {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() &&
+        _playerSkillController.verifyIfAllTextEditingAreFilled(
+            playerNameControllers, playerSkillsControllers)) {
       // Form is valid, now dispatch the skills and player names to the BLoC
       List<NewPlayer> players = [];
 
@@ -293,5 +301,38 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
       }
     }
     super.dispose();
+  }
+
+  _showDeleteDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Delete Players"),
+          content: const Text("Are you sure you want to delete all players?"),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.red.shade400),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                "No",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                _playerSkillController.clearPlayerData(
+                  playerNameControllers,
+                  playerSkillsControllers,
+                );
+                Navigator.of(context).pop();
+                setState(() {});
+              },
+              child: const Text("Yes"),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
