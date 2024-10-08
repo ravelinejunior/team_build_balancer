@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:team_build_balancer/core/dependency_injection/injection_container.dart';
 import 'package:team_build_balancer/core/utils/core_utils.dart';
 import 'package:team_build_balancer/src/skills/domain/model/new_player.dart';
 import 'package:team_build_balancer/src/skills/domain/model/skills_model.dart';
+import 'package:team_build_balancer/src/skills/presentation/view/controller/player_skill_controller.dart';
 import 'package:team_build_balancer/src/skills/presentation/view/result_teams.view.dart';
 
 class PlayersSkillsView extends StatefulWidget {
@@ -22,6 +23,9 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
   List<TextEditingController> playerNameControllers = [];
   List<List<TextEditingController>> playerSkillsControllers = [];
 
+  // Instantiate PlayerSkillController
+  late PlayerSkillController _playerSkillController;
+
   // Mocked list of skills
   final List<String> skills = ["ATK", "DF", "SKILL"];
 
@@ -31,24 +35,38 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
   // Mocked list of score options
   final List<int> scoreOptions = List<int>.generate(10, (index) => index + 1);
 
+  // Define skill weights
+  final Map<String, double> skillWeights = {
+    'ATK': 1.0,
+    'DF': 1.0,
+    'SKILL': 1.0,
+  };
+
   @override
   void initState() {
     super.initState();
+    _playerSkillController = serviceLocator<PlayerSkillController>();
     _initializeControllers();
+    _loadSavedData(); // Load saved player data if available
   }
 
-  @override
-  void dispose() {
-    // Dispose all controllers to avoid memory leaks
-    for (var controller in playerNameControllers) {
-      controller.dispose();
-    }
-    for (var skillsList in playerSkillsControllers) {
-      for (var skillController in skillsList) {
-        skillController.dispose();
-      }
-    }
-    super.dispose();
+  void _loadSavedData() {
+    // Use the controller to load saved player data
+    _playerSkillController.loadPlayerData(
+      playerNameControllers: playerNameControllers,
+      playerSkillsControllers: playerSkillsControllers,
+      skills: skills,
+    );
+  }
+
+  void _savePlayerData() {
+    // Use the controller to save current player data
+    _playerSkillController.savePlayerData(
+      playerNameControllers: playerNameControllers,
+      playerSkillsControllers: playerSkillsControllers,
+      skills: skills,
+      amountOfPlayers: widget.params.amountOfPlayers,
+    );
   }
 
   void _initializeControllers() {
@@ -214,25 +232,25 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
         for (int j = 0; j < skills.length; j++) {
           playerSkills[skills[j]] =
               int.tryParse(playerSkillsControllers[i][j].text) ?? 0;
-          debugPrint(
-              "Player ${i + 1} ${skills[j]}: ${playerSkills[skills[j]]}");
         }
 
         // Add the player model to the list
-        players.add(NewPlayer(name: playerName, skills: playerSkills));
+        players.add(
+          NewPlayer(
+            name: playerName,
+            skills: playerSkills,
+          ),
+        );
       }
+
+      _savePlayerData();
 
       // Generate balanced teams
-      List<List<NewPlayer>> teams =
-          NewPlayer.generateTeams(players, widget.params.amountOfTeams);
-
-      // Print the teams or use them for further logic
-      for (int i = 0; i < teams.length; i++) {
-        debugPrint('Team ${i + 1}:');
-        for (var player in teams[i]) {
-          debugPrint(player.toString());
-        }
-      }
+      List<List<NewPlayer>> teams = _playerSkillController.generateTeams(
+        players: players,
+        numTeams: widget.params.amountOfTeams,
+        skillWeights: skillWeights,
+      );
 
       // Navigate or show a success message
       Navigator.pushNamed(context, ResultTeamsView.routeName, arguments: teams);
@@ -251,7 +269,10 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
           content: const Text("Paste the names below (one per line):"),
           actions: [
             TextButton(
-              onPressed: () => _importFromClipboard(),
+              onPressed: () => _playerSkillController.importFromClipboard(
+                playerNameControllers: playerNameControllers,
+                context: context,
+              ),
               child: const Text("Paste from Clipboard"),
             ),
           ],
@@ -260,30 +281,17 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
     );
   }
 
-  Future _importFromClipboard() async {
-    ClipboardData? clipboardData = await Clipboard.getData('text/plain');
-    if (clipboardData != null) {
-      String clipboardText = clipboardData.text ?? '';
-
-      // Extract names using regular expressions
-      RegExp regex = RegExp(r'\d+\-\s*([A-Za-zÀ-ÿ ]+)', multiLine: true);
-      Iterable<RegExpMatch> matches = regex.allMatches(clipboardText);
-
-      // Create a list of names from the matches
-      List<String> importedNames =
-          matches.map((match) => match.group(1)!.trim()).toList();
-
-      // Populate the player name controllers with extracted names
-      setState(() {
-        for (int i = 0;
-            i < importedNames.length && i < playerNameControllers.length;
-            i++) {
-          playerNameControllers[i].text = importedNames[i];
-        }
-      });
-
-      // ignore: use_build_context_synchronously
-      Navigator.of(context).pop(); // Close dialog
+  @override
+  void dispose() {
+    // Dispose all controllers to avoid memory leaks
+    for (var controller in playerNameControllers) {
+      controller.dispose();
     }
+    for (var skillsList in playerSkillsControllers) {
+      for (var skillController in skillsList) {
+        skillController.dispose();
+      }
+    }
+    super.dispose();
   }
 }

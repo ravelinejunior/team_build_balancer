@@ -9,7 +9,7 @@ class SportsDataSourceImpl implements SportsDataSource {
   @override
   Future<List<SportsModel>> getSports() async {
     return await Future.delayed(
-      const Duration(seconds: 2),
+      const Duration(seconds: 1),
       () {
         return SportsModel.mockDefaultSports();
       },
@@ -19,7 +19,7 @@ class SportsDataSourceImpl implements SportsDataSource {
   @override
   Future<SportsModel> getSportById(int id) async {
     return await Future.delayed(
-      const Duration(seconds: 2),
+      const Duration(seconds: 1),
       () {
         return SportsModel.mockDefaultSports().firstWhere(
           (element) => element.id == id,

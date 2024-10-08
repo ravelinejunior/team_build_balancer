@@ -1,5 +1,5 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:team_build_balancer/core/utils/core_utils.dart';
 import 'package:team_build_balancer/src/skills/domain/model/new_player.dart';
 
 class ResultTeamsView extends StatefulWidget {
@@ -16,12 +16,13 @@ class ResultTeamsView extends StatefulWidget {
 
 class _ResultTeamsViewState extends State<ResultTeamsView> {
   late List<List<NewPlayer>> teams;
+  Set<String> maleNames = {}; // Set to hold dynamically detected male names
 
   @override
   void initState() {
     super.initState();
-    // Initialize with the initially generated teams
     teams = widget.initialTeams;
+    _initializeMaleNames(); // Initialize the male names based on initial data
   }
 
   @override
@@ -55,13 +56,12 @@ class _ResultTeamsViewState extends State<ResultTeamsView> {
                       ),
                       title: Text(player.name),
                       subtitle: Text(
-                            'Total Skill Value: ${player.totalSkillValue}',
-                          ),
+                        'Total Skill Value: ${player.totalSkillValue}',
+                      ),
                     );
                   },
                 ),
                 const Divider(),
-                // Display the average skill of the team
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
@@ -99,67 +99,129 @@ class _ResultTeamsViewState extends State<ResultTeamsView> {
   // Function to reshuffle players across teams while keeping them balanced
   void _reshuffleTeams() {
     setState(() {
-      teams = _swapRandomPlayers(teams);
+      List<List<NewPlayer>> shuffledTeams = _balanceTeams(teams);
+      if (_areTeamsEqual(teams, shuffledTeams)) {
+        CoreUtils.showSnackBar(context, 'Teams are already balanced!');
+      } else {
+        teams = shuffledTeams;
+      }
     });
   }
 
-  /// Swap random players between teams while keeping the balance
-  List<List<NewPlayer>> _swapRandomPlayers(List<List<NewPlayer>> teams) {
-    Random random = Random();
+  /// Check if two teams are equal (i.e., if the shuffle didn't change the teams)
+  bool _areTeamsEqual(
+      List<List<NewPlayer>> oldTeams, List<List<NewPlayer>> newTeams) {
+    for (int i = 0; i < oldTeams.length; i++) {
+      if (oldTeams[i].length != newTeams[i].length) return false;
 
-    // Ensure there are at least two teams to swap players between
-    if (teams.length < 2) return teams;
-
-    // Randomly select two different teams
-    int teamIndex1 = random.nextInt(teams.length);
-    int teamIndex2 = random.nextInt(teams.length);
-    while (teamIndex2 == teamIndex1) {
-      teamIndex2 = random.nextInt(teams.length);
+      for (int j = 0; j < oldTeams[i].length; j++) {
+        if (oldTeams[i][j].name != newTeams[i][j].name) {
+          return false;
+        }
+      }
     }
-
-    // Ensure both teams have players to swap
-    if (teams[teamIndex1].isEmpty || teams[teamIndex2].isEmpty) return teams;
-
-    // Randomly select one player from each team
-    int playerIndex1 = random.nextInt(teams[teamIndex1].length);
-    int playerIndex2 = random.nextInt(teams[teamIndex2].length);
-
-    // Swap the players
-    NewPlayer temp = teams[teamIndex1][playerIndex1];
-    teams[teamIndex1][playerIndex1] = teams[teamIndex2][playerIndex2];
-    teams[teamIndex2][playerIndex2] = temp;
-
-    // Ensure the balance is maintained after swapping
-    if (!_areTeamsBalanced(teams)) {
-      // Revert the swap if the teams are no longer balanced
-      teams[teamIndex2][playerIndex2] = teams[teamIndex1][playerIndex1];
-      teams[teamIndex1][playerIndex1] = temp;
-    }
-
-    return teams;
+    return true;
   }
 
-  /// Check if teams are still balanced after swapping players
-  bool _areTeamsBalanced(List<List<NewPlayer>> teams) {
-    List<double> teamAverages = [];
+  /// Shuffle and balance teams by skill and gender
+  List<List<NewPlayer>> _balanceTeams(List<List<NewPlayer>> teams) {
+    List<NewPlayer> allPlayers = teams.expand((team) => team).toList();
+    allPlayers.shuffle();
 
-    // Calculate average skill for each team
-    for (var team in teams) {
-      double totalSkill = 0;
-      int skillCount = 0;
+    // Group players by gender for balancing
+    List<NewPlayer> males =
+        allPlayers.where((player) => _isMale(player.name)).toList();
+    List<NewPlayer> females =
+        allPlayers.where((player) => !_isMale(player.name)).toList();
 
-      for (var player in team) {
-        totalSkill += player.skills.values.reduce((a, b) => a + b);
-        skillCount += player.skills.length;
-      }
+    // Calculate the target number of males per team to distribute evenly
+    int totalMales = males.length;
+    int totalTeams = teams.length;
+    int malesPerTeam = totalMales ~/ totalTeams;
+    int extraMales = totalMales % totalTeams;
 
-      teamAverages.add(totalSkill / skillCount);
+    List<List<NewPlayer>> balancedTeams = [];
+    int teamSize = teams[0].length;
+
+    // Initialize empty teams
+    for (int i = 0; i < totalTeams; i++) {
+      balancedTeams.add([]);
     }
 
-    // Ensure the difference between the best and worst team is acceptable
-    double maxAverage = teamAverages.reduce(max);
-    double minAverage = teamAverages.reduce(min);
+    // Distribute males first
+    for (int i = 0; i < totalTeams; i++) {
+      int maleCount =
+          malesPerTeam + (i < extraMales ? 1 : 0); // Distribute extra males
 
-    return (maxAverage - minAverage) <= 1.5; // Threshold for balance
+      for (int j = 0; j < maleCount; j++) {
+        if (males.isNotEmpty) {
+          balancedTeams[i].add(males.removeLast());
+        }
+      }
+    }
+
+    // Distribute females evenly across teams
+    for (int i = 0; i < totalTeams; i++) {
+      while (balancedTeams[i].length < teamSize && females.isNotEmpty) {
+        balancedTeams[i].add(females.removeLast());
+      }
+    }
+
+    // Finally, ensure skill balance by adding remaining players by skill value
+    allPlayers.sort((a, b) => b.totalSkillValue.compareTo(a.totalSkillValue));
+    for (var player in allPlayers) {
+      balancedTeams.sort((a, b) =>
+          _calculateTeamAverage(a).compareTo(_calculateTeamAverage(b)));
+      for (var team in balancedTeams) {
+        if (team.length < teamSize) {
+          team.add(player);
+          break;
+        }
+      }
+    }
+
+    return balancedTeams;
+  }
+
+  /// Dynamically detect male names from the initial teams
+  void _initializeMaleNames() {
+    // Assume common name endings and patterns to infer gender
+    for (var team in teams) {
+      for (var player in team) {
+        if (_detectMaleByCommonPatterns(player.name)) {
+          maleNames.add(player.name);
+        }
+      }
+    }
+  }
+
+  /// Detect male names based on common patterns in Brazilian/Portuguese names
+  bool _detectMaleByCommonPatterns(String name) {
+    // List of common male name suffixes in Brazilian/Portuguese names
+    final maleSuffixes = [
+      'o',
+      'r',
+      'l',
+      'n'
+    ]; // João, Pedro, Rafael, Thiago, etc.
+    final femaleSuffixes = ['a', 'e']; // Ana, Beatriz, etc.
+
+    // Basic assumption: names ending in "o", "r", "l", "n" are male
+    String lowerName = name.trim().toLowerCase();
+    String lastChar = lowerName[lowerName.length - 1];
+
+    if (maleSuffixes.contains(lastChar)) {
+      return true;
+    } else if (femaleSuffixes.contains(lastChar)) {
+      return false;
+    }
+
+    // If the pattern does not match, default to male (for simplicity)
+    return true;
+  }
+
+  /// Simplified gender detection based on dynamically gathered names
+  bool _isMale(String name) {
+    return maleNames.contains(name);
   }
 }

@@ -8,6 +8,7 @@ Future<void> init() async {
 }
 
 Future<void> _initSports() async {
+  final sharedPrefs = await SharedPreferences.getInstance();
   serviceLocator
     ..registerFactory(
       () => SportsBloc(
@@ -29,6 +30,12 @@ Future<void> _initSports() async {
     )
     ..registerFactory<SportsDataSource>(
       () => SportsDataSourceImpl(),
+    )
+    ..registerFactory<SharedPreferences>(
+      () => sharedPrefs,
+    )
+    ..registerFactory<PlayerSkillController>(
+      () => PlayerSkillController(),
     );
 }
 
