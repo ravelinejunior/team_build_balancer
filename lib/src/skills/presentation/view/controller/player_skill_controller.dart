@@ -65,6 +65,33 @@ class PlayerSkillController extends ChangeNotifier {
     }
   }
 
+  void addNewPlayer({
+    required List<TextEditingController> playerNameControllers,
+    required List<List<TextEditingController>> playerSkillsControllers,
+    required List<String> skills,
+  }) {
+    // Add new player name controller
+    playerNameControllers.add(TextEditingController());
+
+    // Add new player skills controllers
+    List<TextEditingController> newSkillControllers = [];
+    for (int i = 0; i < skills.length; i++) {
+      newSkillControllers.add(TextEditingController(text: ""));
+    }
+    playerSkillsControllers.add(newSkillControllers);
+  }
+
+  void deletePlayer({
+    required int index,
+    required List<TextEditingController> playerNameControllers,
+    required List<List<TextEditingController>> playerSkillsControllers,
+  }) {
+    if (index >= 0 && index < playerNameControllers.length) {
+      playerNameControllers.removeAt(index);
+      playerSkillsControllers.removeAt(index);
+    }
+  }
+
   bool verifyIfAllTextEditingAreFilled(
     List<TextEditingController> playerNameControllers,
     List<List<TextEditingController>> playerSkillsControllers,

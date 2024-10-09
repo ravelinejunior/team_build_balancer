@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:team_build_balancer/core/dependency_injection/injection_container.dart';
 import 'package:team_build_balancer/core/utils/core_utils.dart';
 import 'package:team_build_balancer/src/skills/domain/model/new_player.dart';
@@ -65,7 +64,7 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
       playerNameControllers: playerNameControllers,
       playerSkillsControllers: playerSkillsControllers,
       skills: skills,
-      amountOfPlayers: widget.params.amountOfPlayers,
+      amountOfPlayers: playerNameControllers.length,
     );
   }
 
@@ -107,120 +106,174 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
         child: Form(
           key: _formKey,
           child: Padding(
-            padding:
-                const EdgeInsets.only(bottom: 80.0), // Adds padding for the FAB
+            padding: const EdgeInsets.only(bottom: 80.0),
             child: ListView.builder(
-              itemCount: widget.params.amountOfPlayers,
+              itemCount: playerNameControllers.length +
+                  1, // Add 1 to include the 'Add Player' button
               itemBuilder: (context, index) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    // Player Name Input
-                    TextFormField(
-                      controller: playerNameControllers[index],
-                      decoration: InputDecoration(
-                        labelText: "Player ${index + 1} Name",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16.0),
+                if (index == playerNameControllers.length) {
+                  // Last item, showing the button to add a new player
+                  return Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          _playerSkillController.addNewPlayer(
+                            playerNameControllers: playerNameControllers,
+                            playerSkillsControllers: playerSkillsControllers,
+                            skills: skills,
+                          );
+                          setState(
+                            () {},
+                          ); // Rebuild the widget to show the new player
+                        },
+                        icon: const Icon(Icons.add),
+                        label: const Text("Add New Player"),
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 12.0),
                         ),
-                        prefixIcon: const Icon(Icons.person),
                       ),
-                      // Validator to ensure the name is entered
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter player name';
-                        }
-                        return null;
-                      },
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                } else {
+                  // Regular player input (the same as before)
+                  return Dismissible(
+                    key: UniqueKey(),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      color: Colors.red,
+                      child: const Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    // Skill inputs for each player
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    confirmDismiss: (direction) async {
+                      // Show confirmation dialog
+                      return await _showDeleteConfirmationDialog(
+                          context, index);
+                    },
+                    onDismissed: (direction) {
+                      _playerSkillController.deletePlayer(
+                        index: index,
+                        playerNameControllers: playerNameControllers,
+                        playerSkillsControllers: playerSkillsControllers,
+                      );
+                      setState(() {});
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        for (int i = 0; i < skills.length; i++) ...[
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Tooltip(
-                                message: (skills[i] == "SKILL") ? skillTip : '',
-                                textStyle: GoogleFonts.lato(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  color: Theme.of(context).colorScheme.surface,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary
-                                          .withOpacity(0.5),
-                                      spreadRadius: 1,
-                                      blurRadius: 2,
-                                      offset: const Offset(0, 2),
+                        const SizedBox(height: 16),
+                        // Player Name Input
+                        TextFormField(
+                          controller: playerNameControllers[index],
+                          decoration: InputDecoration(
+                            labelText: "Player ${index + 1} Name",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            prefixIcon: const Icon(Icons.person),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter player name';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        // Skill inputs for each player
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            for (int i = 0; i < skills.length; i++) ...[
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: DropdownButtonFormField<int>(
+                                    value: int.tryParse(
+                                        playerSkillsControllers[index][i].text),
+                                    decoration: InputDecoration(
+                                      labelText: skills[i],
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                      ),
                                     ),
-                                  ],
-                                ),
-                                child: DropdownButtonFormField<int>(
-                                  value: int.tryParse(
-                                      playerSkillsControllers[index][i].text),
-                                  decoration: InputDecoration(
-                                    labelText: skills[i],
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16.0),
-                                    ),
+                                    items: scoreOptions
+                                        .map<DropdownMenuItem<int>>(
+                                          (int value) => DropdownMenuItem<int>(
+                                            value: value,
+                                            child: Text(value.toString()),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (int? newValue) {
+                                      setState(() {
+                                        playerSkillsControllers[index][i].text =
+                                            newValue.toString();
+                                      });
+                                    },
+                                    validator: (value) {
+                                      if (value.toString().isEmpty) {
+                                        return 'Select ${skills[i]} score';
+                                      }
+                                      if (value == null) {
+                                        return 'Select ${skills[i]} score';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  items: scoreOptions
-                                      .map<DropdownMenuItem<int>>(
-                                        (int value) => DropdownMenuItem<int>(
-                                          value: value,
-                                          child: Text(value.toString()),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (int? newValue) {
-                                    setState(() {
-                                      playerSkillsControllers[index][i].text =
-                                          newValue.toString();
-                                    });
-                                  },
-                                  validator: (value) {
-                                    if (value.toString().isEmpty) {
-                                      return 'Select ${skills[i]} score';
-                                    }
-                                    if (value == null) {
-                                      return 'Select ${skills[i]} score';
-                                    }
-                                    return null;
-                                  },
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
+                            ],
+                          ],
+                        ),
+                        if (index != playerNameControllers.length - 1)
+                          const Divider(),
                       ],
                     ),
-                    // Only display divider if it's not the last item
-                    if (index != widget.params.amountOfPlayers - 1)
-                      const Divider(),
-                  ],
-                );
+                  );
+                }
               },
             ),
           ),
         ),
       ),
-      // Submit Button
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _onSubmit,
         label: const Text("Generate Teams"),
         icon: const Icon(Icons.group),
       ),
+    );
+  }
+
+  Future<bool?> _showDeleteConfirmationDialog(BuildContext context, int index) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete Player ${index + 1}?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -232,7 +285,7 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
       List<NewPlayer> players = [];
 
       // Loop through the number of players and store their names and skills
-      for (int i = 0; i < widget.params.amountOfPlayers; i++) {
+      for (int i = 0; i < playerNameControllers.length; i++) {
         String playerName = playerNameControllers[i].text;
         Map<String, int> playerSkills = {};
 
