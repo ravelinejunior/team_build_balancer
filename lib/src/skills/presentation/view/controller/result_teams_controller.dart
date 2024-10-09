@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:team_build_balancer/src/skills/domain/model/new_player.dart';
 
 class ResultTeamsController {
@@ -15,7 +17,7 @@ class ResultTeamsController {
   }
 
   /// Shuffle and balance teams by skill and gender
-  List<List<NewPlayer>> balanceTeams() {
+  List<List<NewPlayer>> balancesTeams() {
     List<NewPlayer> allPlayers = teams.expand((team) => team).toList();
     allPlayers.shuffle();
 
@@ -73,6 +75,48 @@ class ResultTeamsController {
 
     return balancedTeams;
   }
+
+  List<List<NewPlayer>> balanceTeams() {
+  List<NewPlayer> allPlayers = teams.expand((team) => team).toList();
+  allPlayers.shuffle();
+
+  // Group players by gender for balancing
+  List<NewPlayer> males = allPlayers.where((player) => _isMale(player.name)).toList();
+  List<NewPlayer> females = allPlayers.where((player) => !_isMale(player.name)).toList();
+
+  // Total players and teams
+  int totalPlayers = allPlayers.length;
+  int totalTeams = teams.length;
+
+  // Calculate the target number of players per team
+  int playersPerTeam = totalPlayers ~/ totalTeams;
+  int extraPlayers = totalPlayers % totalTeams; // This represents the remainder, at most one team should have one extra player.
+
+  List<List<NewPlayer>> balancedTeams = [];
+
+  // Initialize empty teams
+  for (int i = 0; i < totalTeams; i++) {
+    balancedTeams.add([]);
+  }
+
+  // Ensure each team has playersPerTeam players, except for some having one extra
+  int teamIndex = 0;
+
+  // Distribute males first, then females, while maintaining the correct number of players per team
+  List<NewPlayer> remainingPlayers = males + females; // Combine males and females for final distribution
+
+  for (var player in remainingPlayers) {
+    // Allow the first `extraPlayers` teams to get one additional player
+    if (balancedTeams[teamIndex].length < playersPerTeam + (teamIndex < extraPlayers ? 1 : 0)) {
+      balancedTeams[teamIndex].add(player);
+    }
+
+    // Move to the next team
+    teamIndex = (teamIndex + 1) % totalTeams;
+  }
+
+  return balancedTeams;
+}
 
   /// Dynamically detect male names from the initial teams
   void _initializeMaleNames() {
@@ -133,28 +177,78 @@ class ResultTeamsController {
     return totalSkill / skillCount;
   }
 
-  /// Export teams as CSV file
-  Future<void> exportTeamsAsCSV(List<List<NewPlayer>> teams) async {
-    String csvData = _convertTeamsToCSV(teams);
-
-    // Save the CSV to a file
-    final directory = await getDownloadsDirectory();
-    final file = File('${directory?.absolute.path}/teams.csv');
-    await file.writeAsString(csvData);
-
-    debugPrint("Teams exported as CSV to ${file.path}");
+  /// Share teams as a text message via WhatsApp
+  Future<void> shareTeamsToWhatsApp(List<List<NewPlayer>> teams) async {
+    String teamsText = _convertTeamsToText(teams);
+    await Share.share(teamsText, subject: 'Balanced Teams');
   }
 
-  /// Export teams as JSON file
-  Future<void> exportTeamsAsJSON(List<List<NewPlayer>> teams) async {
-    String jsonData = jsonEncode(_convertTeamsToMap(teams));
+  /// Convert the teams to a text format for sharing via WhatsApp
+  String _convertTeamsToText(List<List<NewPlayer>> teams) {
+    StringBuffer textBuffer = StringBuffer();
 
-    // Save the JSON to a file
-    final directory = await getDownloadsDirectory();
-    final file = File('${directory?.absolute.path}/teams.json');
-    await file.writeAsString(jsonData);
+    // Iterate through the teams and players
+    for (int teamIndex = 0; teamIndex < teams.length; teamIndex++) {
+      textBuffer.writeln("Team ${teamIndex + 1}:");
+      final team = teams[teamIndex];
+      for (final player in team) {
+        textBuffer
+            .writeln('${player.name} (Total Skill: ${player.totalSkillValue})');
+      }
+      textBuffer.writeln(); // Add a blank line between teams
+    }
 
-    debugPrint("Teams exported as JSON to ${file.path}");
+    return textBuffer.toString();
+  }
+
+  /// Export teams as CSV file into the Downloads folder
+  Future<void> exportTeamsAsCSV(List<List<NewPlayer>> teams) async {
+    // Request storage permission
+    if (await _requestStoragePermission()) {
+      // Get the path to the Downloads folder
+      final directory = await getDownloadsDirectory();
+
+      if (directory != null) {
+        // Create the CSV content
+        String csvData = _convertTeamsToCSV(teams);
+
+        // Create the file path and write the file
+        final filePath = '${directory.path}/teams.csv';
+        final file = File(filePath);
+        await file.writeAsString(csvData);
+
+        debugPrint("Teams exported as CSV to $filePath");
+      } else {
+        debugPrint("Downloads directory not found");
+      }
+    } else {
+      debugPrint("Permission to write to storage denied");
+    }
+  }
+
+  /// Export teams as CSV file into the Downloads folder
+  Future<void> exportTeamsAsJson(List<List<NewPlayer>> teams) async {
+    // Request storage permission
+    if (await _requestStoragePermission()) {
+      // Get the path to the Downloads folder
+      final directory = await getDownloadsDirectory();
+
+      if (directory != null) {
+        // Create the CSV content
+          String jsonData = jsonEncode(_convertTeamsToMap(teams));
+
+        // Create the file path and write the file
+        final filePath = '${directory.path}/teams.json';
+        final file = File(filePath);
+        await file.writeAsString(jsonData);
+
+        debugPrint("Teams exported as Json to $filePath");
+      } else {
+        debugPrint("Downloads directory not found");
+      }
+    } else {
+      debugPrint("Permission to write to storage denied");
+    }
   }
 
   /// Convert the teams to CSV format
@@ -174,6 +268,24 @@ class ResultTeamsController {
     }
 
     return csvBuffer.toString();
+  }
+
+  /// Request storage permission
+  Future<bool> _requestStoragePermission() async {
+    PermissionStatus status = await Permission.storage.request();
+    return status.isGranted;
+  }
+
+  /// Get the Downloads directory for the device
+  Future<Directory?> getDownloadsDirectory() async {
+    // This uses path_provider to get the external storage directory, then appends "Download"
+    if (Platform.isAndroid) {
+      return Directory('/storage/emulated/0/Download');
+    } else if (Platform.isIOS) {
+      // For iOS, use the app's document directory
+      return await getApplicationDocumentsDirectory();
+    }
+    return null;
   }
 
   /// Convert teams to a Map for JSON export

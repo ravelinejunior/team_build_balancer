@@ -32,7 +32,7 @@ class _ResultTeamsViewState extends State<ResultTeamsView> {
         actions: [
           IconButton(
             icon: const Icon(Icons.upload_rounded),
-            onPressed: () async{
+            onPressed: () async {
               await _showExportDialog(_controller.teams);
             },
             tooltip: 'Export Teams',
@@ -102,11 +102,8 @@ class _ResultTeamsViewState extends State<ResultTeamsView> {
     });
   }
 
-
   // Display confirmation dialog before exporting
-  Future _showExportDialog(
-    List<List<NewPlayer>> teams
-  ) async{
+  Future _showExportDialog(List<List<NewPlayer>> teams) async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -132,9 +129,10 @@ class _ResultTeamsViewState extends State<ResultTeamsView> {
   }
 
   // Call export function from controller
-  Future<void> _exportTeams(List<List<NewPlayer>> teams) async{
+  Future<void> _exportTeams(List<List<NewPlayer>> teams) async {
     await _controller.exportTeamsAsCSV(teams);
-    await _controller.exportTeamsAsJSON(teams);
+    await _controller.exportTeamsAsJson(teams);
+    await _controller.shareTeamsToWhatsApp(teams);
     // ignore: use_build_context_synchronously
     CoreUtils.showSnackBar(context, 'Teams exported successfully!');
   }
