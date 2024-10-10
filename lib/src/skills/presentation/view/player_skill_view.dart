@@ -42,6 +42,7 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
   };
 
   @override
+
   void initState() {
     super.initState();
     _playerSkillController = serviceLocator<PlayerSkillController>();
@@ -55,6 +56,7 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
       playerNameControllers: playerNameControllers,
       playerSkillsControllers: playerSkillsControllers,
       skills: skills,
+      sportName: widget.params.sportName,
     );
   }
 
@@ -65,6 +67,7 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
       playerSkillsControllers: playerSkillsControllers,
       skills: skills,
       amountOfPlayers: playerNameControllers.length,
+      sportName: widget.params.sportName,
     );
   }
 
@@ -375,8 +378,9 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
             TextButton(
               onPressed: () async {
                 _playerSkillController.clearPlayerData(
-                  playerNameControllers,
-                  playerSkillsControllers,
+                  playerNameControllers: playerNameControllers,
+                  playerSkillsControllers: playerSkillsControllers,
+                  sportName: widget.params.sportName,
                 );
                 Navigator.of(context).pop();
                 setState(() {});

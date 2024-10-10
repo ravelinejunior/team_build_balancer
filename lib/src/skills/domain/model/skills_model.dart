@@ -50,18 +50,22 @@ class SkillModel extends Equatable {
 class SkillToPlayerAmountParams {
   final int amountOfPlayers;
   final int amountOfTeams;
+  final String sportName;
   SkillToPlayerAmountParams({
     required this.amountOfPlayers,
     required this.amountOfTeams,
+    required this.sportName,
   });
 
   SkillToPlayerAmountParams copyWith({
     int? amountOfPlayers,
     int? amountOfTeams,
+    String? sportName,
   }) {
     return SkillToPlayerAmountParams(
       amountOfPlayers: amountOfPlayers ?? this.amountOfPlayers,
       amountOfTeams: amountOfTeams ?? this.amountOfTeams,
+      sportName: sportName ?? this.sportName,
     );
   }
 
@@ -69,6 +73,7 @@ class SkillToPlayerAmountParams {
     return <String, dynamic>{
       'amountOfPlayers': amountOfPlayers,
       'amountOfTeams': amountOfTeams,
+      'sportName': sportName,
     };
   }
 
@@ -76,6 +81,7 @@ class SkillToPlayerAmountParams {
     return SkillToPlayerAmountParams(
       amountOfPlayers: map['amountOfPlayers'] as int,
       amountOfTeams: map['amountOfTeams'] as int,
+      sportName: map['sportName'] as String,
     );
   }
 
@@ -86,17 +92,18 @@ class SkillToPlayerAmountParams {
           json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() =>
-      'SkillToPlayerParams(amountOfPlayers: $amountOfPlayers, amountOfTeams: $amountOfTeams)';
+  String toString() => 'SkillToPlayerAmountParams(amountOfPlayers: $amountOfPlayers, amountOfTeams: $amountOfTeams, sportName: $sportName)';
 
   @override
   bool operator ==(covariant SkillToPlayerAmountParams other) {
     if (identical(this, other)) return true;
-
-    return other.amountOfPlayers == amountOfPlayers &&
-        other.amountOfTeams == amountOfTeams;
+  
+    return 
+      other.amountOfPlayers == amountOfPlayers &&
+      other.amountOfTeams == amountOfTeams &&
+      other.sportName == sportName;
   }
 
   @override
-  int get hashCode => amountOfPlayers.hashCode ^ amountOfTeams.hashCode;
+  int get hashCode => amountOfPlayers.hashCode ^ amountOfTeams.hashCode ^ sportName.hashCode;
 }

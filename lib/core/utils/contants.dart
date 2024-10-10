@@ -14,3 +14,10 @@ const String tennisBackground =
     "https://i.pinimg.com/564x/88/73/3f/88733fb55dff60bf9f1d83321b2504ba.jpg";
 const String footvolleyBackground =
     "https://i.pinimg.com/564x/d6/88/71/d68871f77c046b5c4aecc1bcbdcb543a.jpg";
+
+String getSharedKeyBySportForSkillScreen(String sportName) {
+  return 'skill_setup_$sportName';
+}
+String getSharedKeyPlayerData(String sportName) {
+  return 'player_data_$sportName';
+}

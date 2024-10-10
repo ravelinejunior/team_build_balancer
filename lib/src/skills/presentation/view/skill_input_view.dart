@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:team_build_balancer/core/dependency_injection/injection_container.dart';
+import 'package:team_build_balancer/core/utils/contants.dart';
 import 'package:team_build_balancer/core/utils/core_utils.dart';
 import 'package:team_build_balancer/src/skills/domain/model/skills_model.dart';
 import 'package:team_build_balancer/src/skills/presentation/view/player_skill_view.dart';
@@ -17,6 +22,28 @@ class _SkillInputViewState extends State<SkillInputView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController playersController = TextEditingController();
   final TextEditingController teamsController = TextEditingController();
+
+  final sharedPrefs = serviceLocator<SharedPreferences>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDataFromSharedPrefs();
+  }
+
+  void _loadDataFromSharedPrefs() {
+    final data = sharedPrefs
+        .getString(getSharedKeyBySportForSkillScreen(widget.sport.name));
+    if (data != null) {
+      final params = SkillToPlayerAmountParams.fromMap(jsonDecode(data));
+      _initSkillByTeam(params: params);
+    }
+  }
+
+  void _initSkillByTeam({required SkillToPlayerAmountParams params}) {
+    playersController.text = params.amountOfPlayers.toString();
+    teamsController.text = params.amountOfTeams.toString();
+  }
 
   @override
   void dispose() {
@@ -44,8 +71,9 @@ class _SkillInputViewState extends State<SkillInputView> {
                 // Circular image representing the selected sport
                 CircleAvatar(
                   radius: 60,
-                  backgroundImage:
-                      NetworkImage(widget.sport.image ?? ''), // Example image
+                  backgroundImage: NetworkImage(
+                    widget.sport.image ?? '',
+                  ),
                 ),
                 const SizedBox(height: 20),
                 // Number of Players Input
@@ -147,6 +175,15 @@ class _SkillInputViewState extends State<SkillInputView> {
       final params = SkillToPlayerAmountParams(
         amountOfPlayers: players,
         amountOfTeams: teams,
+        sportName: widget.sport.name,
+      );
+      final sportData = params.toJson();
+      debugPrint(sportData);
+
+      // Save the parameters in shared preferences
+      sharedPrefs.setString(
+        getSharedKeyBySportForSkillScreen(widget.sport.name),
+        sportData,
       );
 
       // Navigate to the next screen (e.g., PlayersSkillsView) based on success

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_build_balancer/core/dependency_injection/injection_container.dart';
+import 'package:team_build_balancer/core/utils/contants.dart';
 import 'package:team_build_balancer/src/skills/domain/model/new_player.dart';
 
 class PlayerSkillController extends ChangeNotifier {
@@ -14,6 +15,7 @@ class PlayerSkillController extends ChangeNotifier {
     required List<List<TextEditingController>> playerSkillsControllers,
     required List<String> skills,
     required int amountOfPlayers,
+    required String sportName,
   }) async {
     // Prepare data to be saved in JSON format
     List<Map<String, dynamic>> playerData = [];
@@ -35,16 +37,19 @@ class PlayerSkillController extends ChangeNotifier {
 
     // Save the data as a JSON string
     String jsonData = jsonEncode(playerData);
-    await sharedPreferences.setString('playerData', jsonData);
+    await sharedPreferences.setString(
+        getSharedKeyPlayerData(sportName), jsonData);
   }
 
   void loadPlayerData({
     required List<TextEditingController> playerNameControllers,
     required List<List<TextEditingController>> playerSkillsControllers,
     required List<String> skills,
+    required String sportName,
   }) async {
     // Check if there is saved player data
-    String? jsonData = sharedPreferences.getString('playerData');
+    String? jsonData =
+        sharedPreferences.getString(getSharedKeyPlayerData(sportName));
     if (jsonData != null) {
       // Decode JSON data
       List<dynamic> savedPlayerData = jsonDecode(jsonData);
@@ -109,11 +114,12 @@ class PlayerSkillController extends ChangeNotifier {
     return true;
   }
 
-  void clearPlayerData(
-    List<TextEditingController> playerNameControllers,
-    List<List<TextEditingController>> playerSkillsControllers,
-  ) {
-    sharedPreferences.remove('playerData');
+  void clearPlayerData({
+    required List<TextEditingController> playerNameControllers,
+    required List<List<TextEditingController>> playerSkillsControllers,
+    required String sportName,
+  }) {
+    sharedPreferences.remove(getSharedKeyPlayerData(sportName));
     _clearTextEditingInputs(playerNameControllers, playerSkillsControllers);
   }
 
