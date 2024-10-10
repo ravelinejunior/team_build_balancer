@@ -1,0 +1,16 @@
+{
+    "appTitle": "Balanceador de Equipes",
+    "addPlayer": "Adicionar Novo Jogador",
+    "generateTeams": "Gerar Times",
+    "confirmDeletion": "Tem certeza de que deseja excluir o Jogador {playerIndex}?",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "male": "Masculino",
+    "female": "Feminino",
+    "totalSkill": "Habilidade Total",
+    "team": "Time",
+    "player": "Jogador",
+    "teamSkill": "Habilidade do Time",
+    "playerSkill": "Habilidade do Jogador",
+    "noDataAvailable":"Sem dados disponíveis"
+}

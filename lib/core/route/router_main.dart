@@ -5,8 +5,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case SportsScreen.routeName:
       return _pageBuilder(
         (_) => BlocProvider(
-            create: (context) => serviceLocator<SportsBloc>(),
-            child: const SportsScreen()),
+          create: (context) => serviceLocator<SportsBloc>(),
+          child: const SportsScreen(),
+        ),
         settings: settings,
       );
 

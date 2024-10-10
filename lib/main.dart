@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:team_build_balancer/core/dependency_injection/injection_container.dart';
+import 'package:team_build_balancer/core/localization/l10n.dart';
 import 'package:team_build_balancer/core/res/theme.dart';
 import 'package:team_build_balancer/core/route/router.dart';
 import 'package:team_build_balancer/src/skills/domain/use_cases/player/add_player_use_case.dart';
@@ -61,6 +63,25 @@ class MyApp extends StatelessWidget {
         theme: mainThemeData(),
         darkTheme: mainThemeData(),
         themeMode: ThemeMode.system,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', ''), // English
+          Locale('pt', ''), // Portuguese
+        ],
+        localeResolutionCallback: (locale, supportedLocales) {
+          if (locale == null) return supportedLocales.first;
+          for (var supportedLocale in supportedLocales) {
+            if (supportedLocale.languageCode == locale.languageCode) {
+              return supportedLocale;
+            }
+          }
+          return supportedLocales.first;
+        },
         onGenerateRoute: generateRoute,
       ),
     );

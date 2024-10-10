@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:team_build_balancer/core/localization/l10n.dart';
 import 'package:team_build_balancer/core/utils/core_utils.dart';
 import 'package:team_build_balancer/src/skills/presentation/skills_screen.dart';
 import 'package:team_build_balancer/src/sports/domain/model/sports.dart';
@@ -26,7 +27,7 @@ class _SportsScreenState extends State<SportsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sports'),
+        title: Text(AppLocalizations.of(context)!.translate('appTitle')),
         centerTitle: true,
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -61,7 +62,7 @@ class _SportsScreenState extends State<SportsScreen> {
           } else if (state is SportsError) {
             return Center(child: Text(state.message));
           }
-          return const Center(child: Text('No data available'));
+          return Center(child: Text(AppLocalizations.of(context)!.translate('noDataAvailable')));
         },
         listener: (context, state) {
           if (state is SportsLoading) {
