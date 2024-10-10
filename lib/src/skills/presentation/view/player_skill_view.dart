@@ -99,9 +99,7 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
 
     if (isFirstTime) {
       prefs.setBool('firstTimePlayersSkillsView', false); // Mark as viewed
-    }
-
-    tutorialCoachMark = TutorialCoachMark(
+      tutorialCoachMark = TutorialCoachMark(
       targets: _createTargets(),
       colorShadow: Colors.black,
       hideSkip: true,
@@ -117,6 +115,8 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
         debugPrint('Clicked target: $target');
       },
     )..show(context: context);
+    }
+
   }
 
   List<TargetFocus> _createTargets() {
