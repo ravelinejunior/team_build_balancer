@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:team_build_balancer/core/dependency_injection/injection_container.dart';
+import 'package:team_build_balancer/core/localization/l10n.dart';
 import 'package:team_build_balancer/core/utils/core_utils.dart';
+import 'package:team_build_balancer/core/widgets/custom_alert_dialog.dart';
 import 'package:team_build_balancer/src/skills/domain/model/new_player.dart';
 import 'package:team_build_balancer/src/skills/domain/model/skills_model.dart';
 import 'package:team_build_balancer/src/skills/presentation/view/controller/player_skill_controller.dart';
@@ -28,9 +31,6 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
   // Mocked list of skills
   final List<String> skills = ["ATK", "DF", "SKILL"];
 
-  final String skillTip =
-      "The skill is based on what you judge important for the player (good server, good spike, good shot)";
-
   // Mocked list of score options
   final List<int> scoreOptions = List<int>.generate(10, (index) => index + 1);
 
@@ -42,7 +42,6 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
   };
 
   @override
-
   void initState() {
     super.initState();
     _playerSkillController = serviceLocator<PlayerSkillController>();
@@ -88,17 +87,24 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Players and Skills"),
+        title: Text(
+          AppLocalizations.of(context)?.translate('playerSkillAppBarTitle') ??
+              '',
+        ),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.upload_file),
-            tooltip: 'Import Players',
+            tooltip:
+                AppLocalizations.of(context)?.translate('importPlayersText') ??
+                    '',
             onPressed: () => _showImportDialog(context),
           ),
           IconButton(
             icon: const Icon(Icons.delete),
-            tooltip: 'Export Players',
+            tooltip:
+                AppLocalizations.of(context)?.translate('deletePlayersText') ??
+                    '',
             onPressed: () => _showDeleteDialog(),
           ),
         ],
@@ -131,7 +137,11 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
                           ); // Rebuild the widget to show the new player
                         },
                         icon: const Icon(Icons.add),
-                        label: const Text("Add New Player"),
+                        label: Text(
+                          AppLocalizations.of(context)
+                                  ?.translate('addPlayerText') ??
+                              '',
+                        ),
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16.0),
@@ -160,7 +170,9 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
                     confirmDismiss: (direction) async {
                       // Show confirmation dialog
                       return await _showDeleteConfirmationDialog(
-                          context, index);
+                        context,
+                        index,
+                      );
                     },
                     onDismissed: (direction) {
                       _playerSkillController.deletePlayer(
@@ -178,7 +190,8 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
                         TextFormField(
                           controller: playerNameControllers[index],
                           decoration: InputDecoration(
-                            labelText: "Player ${index + 1} Name",
+                            labelText:
+                                "${AppLocalizations.of(context)?.translate('validPlayerNameText')} ${index + 1}",
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16.0),
                             ),
@@ -186,7 +199,8 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter player name';
+                              return AppLocalizations.of(context)
+                                  ?.translate('validPlayerNameText');
                             }
                             return null;
                           },
@@ -226,10 +240,10 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
                                     },
                                     validator: (value) {
                                       if (value.toString().isEmpty) {
-                                        return 'Select ${skills[i]} score';
+                                        return '${AppLocalizations.of(context)?.translate('validScoreSkillText')} ${skills[i]}';
                                       }
                                       if (value == null) {
-                                        return 'Select ${skills[i]} score';
+                                        return '${AppLocalizations.of(context)?.translate('validScoreSkillText')} ${skills[i]}';
                                       }
                                       return null;
                                     },
@@ -252,7 +266,9 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _onSubmit,
-        label: const Text("Generate Teams"),
+        label: Text(
+          AppLocalizations.of(context)?.translate('generateTeamsTitle') ?? '',
+        ),
         icon: const Icon(Icons.group),
       ),
     );
@@ -263,16 +279,25 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Deletion'),
-          content: Text('Are you sure you want to delete Player ${index + 1}?'),
+          title: Text(
+            AppLocalizations.of(context)?.translate('confirmDeletionTitle') ??
+                '',
+          ),
+          content: Text(
+            '${AppLocalizations.of(context)?.translate('confirmDeletionTitle')} ${index + 1}?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(
+                AppLocalizations.of(context)?.translate('cancelText') ?? '',
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete'),
+              child: Text(
+                AppLocalizations.of(context)?.translate('deleteText') ?? '',
+              ),
             ),
           ],
         );
@@ -320,7 +345,11 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
       Navigator.pushNamed(context, ResultTeamsView.routeName, arguments: teams);
     } else {
       // Show error message if validation fails
-      CoreUtils.showSnackBar(context, 'Please fill in all fields correctly');
+      CoreUtils.showSnackBar(
+        context,
+        AppLocalizations.of(context)?.translate('verifyFieldsErrorMessage') ??
+            '',
+      );
     }
   }
 
@@ -329,17 +358,69 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Import Players from WhatsApp"),
-          content: const Text("Paste the names below (one per line):"),
+          title: Text(
+            AppLocalizations.of(context)
+                    ?.translate('importPlayersWhatsAppTitle') ??
+                '',
+            textAlign: TextAlign.center,
+          ),
+          content: Text(
+            AppLocalizations.of(context)
+                    ?.translate('pasteImportPlayersMessage') ??
+                '',
+          ),
           actions: [
             TextButton(
               onPressed: () => _playerSkillController.importFromClipboard(
                 playerNameControllers: playerNameControllers,
                 context: context,
               ),
-              child: const Text("Paste from Clipboard"),
+              style: TextButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                elevation: 12,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  AppLocalizations.of(context)
+                          ?.translate('pastePlayersFromClipboard') ??
+                      '',
+                  style: GoogleFonts.montserrat(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  _showDeleteDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomDialog(
+          title: AppLocalizations.of(context)!.translate('deletePlayersText'),
+          content: AppLocalizations.of(context)!
+              .translate('deleteAllPlayersMessage'),
+          positiveButtonText:
+              AppLocalizations.of(context)!.translate('confirmText'),
+          negativeButtonText:
+              AppLocalizations.of(context)!.translate('cancelText'),
+          onPositivePressed: () {
+            _playerSkillController.clearPlayerData(
+              playerNameControllers: playerNameControllers,
+              playerSkillsControllers: playerSkillsControllers,
+              sportName: widget.params.sportName,
+            );
+            Navigator.of(context).pop();
+            setState(() {});
+          },
+          onNegativePressed: () => Navigator.of(context).pop(),
         );
       },
     );
@@ -357,39 +438,5 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
       }
     }
     super.dispose();
-  }
-
-  _showDeleteDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Delete Players"),
-          content: const Text("Are you sure you want to delete all players?"),
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(backgroundColor: Colors.red.shade400),
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                "No",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                _playerSkillController.clearPlayerData(
-                  playerNameControllers: playerNameControllers,
-                  playerSkillsControllers: playerSkillsControllers,
-                  sportName: widget.params.sportName,
-                );
-                Navigator.of(context).pop();
-                setState(() {});
-              },
-              child: const Text("Yes"),
-            ),
-          ],
-        );
-      },
-    );
   }
 }

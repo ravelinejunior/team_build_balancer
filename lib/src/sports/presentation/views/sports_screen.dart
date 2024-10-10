@@ -18,7 +18,6 @@ class SportsScreen extends StatefulWidget {
 class _SportsScreenState extends State<SportsScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     context.read<SportsBloc>().add(GetSportsEvent());
   }
@@ -62,7 +61,7 @@ class _SportsScreenState extends State<SportsScreen> {
           } else if (state is SportsError) {
             return Center(child: Text(state.message));
           }
-          return Center(child: Text(AppLocalizations.of(context)!.translate('noDataAvailable')));
+          return Center(child: Text(AppLocalizations.of(context)!.translate('noDataAvailableText')));
         },
         listener: (context, state) {
           if (state is SportsLoading) {

@@ -50,7 +50,8 @@ class CustomDialog extends StatelessWidget {
                   child: _buildRoundedButton(
                     context,
                     negativeButtonText,
-                    Colors.redAccent,
+                    Theme.of(context).buttonTheme.colorScheme?.primary ??
+                        Theme.of(context).colorScheme.background,
                     onNegativePressed,
                   ),
                 ),
@@ -60,7 +61,8 @@ class CustomDialog extends StatelessWidget {
                   child: _buildRoundedButton(
                     context,
                     positiveButtonText,
-                    Colors.greenAccent,
+                    Theme.of(context).buttonTheme.colorScheme?.onSurface ??
+                        Theme.of(context).colorScheme.onBackground,
                     onPositivePressed,
                   ),
                 ),

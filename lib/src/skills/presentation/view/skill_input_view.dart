@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_build_balancer/core/dependency_injection/injection_container.dart';
+import 'package:team_build_balancer/core/localization/l10n.dart';
 import 'package:team_build_balancer/core/utils/contants.dart';
 import 'package:team_build_balancer/core/utils/core_utils.dart';
 import 'package:team_build_balancer/src/skills/domain/model/skills_model.dart';
@@ -81,7 +82,8 @@ class _SkillInputViewState extends State<SkillInputView> {
                   controller: playersController,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: "Number of Players",
+                    labelText: AppLocalizations.of(context)
+                        ?.translate('numberOfPlayersText'),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16.0),
                     ),
@@ -91,11 +93,13 @@ class _SkillInputViewState extends State<SkillInputView> {
                   // Validator to check if the input is a positive number
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter the number of players';
+                      return AppLocalizations.of(context)
+                          ?.translate('positiveNumberOfPlayersText');
                     }
                     final numPlayers = int.tryParse(value);
                     if (numPlayers == null || numPlayers <= 0) {
-                      return 'Enter a valid number greater than 0';
+                      return AppLocalizations.of(context)
+                          ?.translate('validNumberOfPlayersOrTeamsText');
                     }
                     return null;
                   },
@@ -109,7 +113,8 @@ class _SkillInputViewState extends State<SkillInputView> {
                   controller: teamsController,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: "Number of Teams",
+                    labelText: AppLocalizations.of(context)
+                        ?.translate('numberOfTeamsText'),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16.0),
                     ),
@@ -119,11 +124,13 @@ class _SkillInputViewState extends State<SkillInputView> {
                   // Validator to check if the input is a positive number
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter the number of teams';
+                      return AppLocalizations.of(context)
+                          ?.translate('positiveNumberOfTeamsText');
                     }
                     final numTeams = int.tryParse(value);
                     if (numTeams == null || numTeams <= 0) {
-                      return 'Enter a valid number greater than 0';
+                      return AppLocalizations.of(context)
+                          ?.translate('validNumberOfPlayersOrTeamsText');
                     }
                     return null;
                   },
@@ -155,7 +162,9 @@ class _SkillInputViewState extends State<SkillInputView> {
                     onPressed: () {
                       _onSubmit(context);
                     },
-                    child: const Text("Next"),
+                    child: Text(
+                      AppLocalizations.of(context)!.translate('nextText'),
+                    ),
                   ),
                 ),
               ],
@@ -194,7 +203,10 @@ class _SkillInputViewState extends State<SkillInputView> {
       );
     } else {
       // Show error or validation feedback
-      CoreUtils.showSnackBar(context, 'Verify if the fields are valids!');
+      CoreUtils.showSnackBar(
+        context,
+        AppLocalizations.of(context)!.translate('verifyFieldsErrorMessage'),
+      );
     }
   }
 }
