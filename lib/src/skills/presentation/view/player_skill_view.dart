@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_build_balancer/core/dependency_injection/injection_container.dart';
 import 'package:team_build_balancer/core/localization/l10n.dart';
 import 'package:team_build_balancer/core/utils/core_utils.dart';
@@ -8,6 +9,7 @@ import 'package:team_build_balancer/src/skills/domain/model/new_player.dart';
 import 'package:team_build_balancer/src/skills/domain/model/skills_model.dart';
 import 'package:team_build_balancer/src/skills/presentation/view/controller/player_skill_controller.dart';
 import 'package:team_build_balancer/src/skills/presentation/view/result_teams.view.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 class PlayersSkillsView extends StatefulWidget {
   const PlayersSkillsView({required this.params, Key? key}) : super(key: key);
@@ -20,6 +22,9 @@ class PlayersSkillsView extends StatefulWidget {
 
 class _PlayersSkillsViewState extends State<PlayersSkillsView> {
   final _formKey = GlobalKey<FormState>();
+  final GlobalKey _importButtonKey = GlobalKey();
+
+  TutorialCoachMark? tutorialCoachMark;
 
   // List of TextEditingControllers for player names and skill values
   List<TextEditingController> playerNameControllers = [];
@@ -47,6 +52,11 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
     _playerSkillController = serviceLocator<PlayerSkillController>();
     _initializeControllers();
     _loadSavedData(); // Load saved player data if available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _showTutorial();
+      });
+    });
   }
 
   void _loadSavedData() {
@@ -83,6 +93,59 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
     }
   }
 
+  void _showTutorial() {
+    final prefs = serviceLocator<SharedPreferences>();
+    bool? isFirstTime = prefs.getBool('firstTimePlayersSkillsView') ?? true;
+
+    if (isFirstTime) {
+      prefs.setBool('firstTimePlayersSkillsView', false); // Mark as viewed
+    }
+
+    tutorialCoachMark = TutorialCoachMark(
+      targets: _createTargets(),
+      colorShadow: Colors.black,
+      hideSkip: true,
+      useSafeArea: true,
+      onFinish: () {
+        debugPrint("Tutorial finished");
+      },
+      onSkip: () {
+        debugPrint("Tutorial skipped");
+        return true;
+      },
+      onClickTarget: (target) {
+        debugPrint('Clicked target: $target');
+      },
+    )..show(context: context);
+  }
+
+  List<TargetFocus> _createTargets() {
+    return [
+      TargetFocus(
+        identify: "import_players",
+        keyTarget: _importButtonKey,
+        shape: ShapeLightFocus.Circle,
+        radius: 30,
+        paddingFocus: 10,
+        contents: [
+          TargetContent(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                AppLocalizations.of(context)
+                        ?.translate('importPlayersFromTextMessage') ??
+                    '',
+                style: const TextStyle(color: Colors.white, fontSize: 18.0),
+              ),
+            ),
+          ),
+        ],
+        enableOverlayTab: true,
+        enableTargetTab: true,
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,6 +157,7 @@ class _PlayersSkillsViewState extends State<PlayersSkillsView> {
         centerTitle: true,
         actions: [
           IconButton(
+            key: _importButtonKey,
             icon: const Icon(Icons.upload_file),
             tooltip:
                 AppLocalizations.of(context)?.translate('importPlayersText') ??

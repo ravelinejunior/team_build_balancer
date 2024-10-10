@@ -45,5 +45,7 @@
     "confirmExportText": "Confirmar Exportação",
     "confirmExportMessage": "Deseja exportar os times atuais?",
     "exportText": "Exportar",
-    "exportedTeamsSuccessfullyMessage": "Times exportados com sucesso!"
+    "exportedTeamsSuccessfullyMessage": "Times exportados com sucesso!",
+    "skipTutorialText":"Pular Tutorial",
+    "importPlayersFromTextMessage": "Clique aqui para importar seus jogadores!\nO formato de importação é basicamente uma lista simples. Ex:\n1-John\n2-Marina\n3-..."
 }
